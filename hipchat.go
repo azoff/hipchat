@@ -71,6 +71,7 @@ type ErrorResponse struct {
 
 type Client struct {
 	AuthToken string
+	HttpClient *http.Client
 }
 
 func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
@@ -102,7 +103,7 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return err
 	}
 
-	resp, err := http.PostForm(uri, payload)
+	resp, err := c.HttpClient.PostForm(uri, payload)
 	if err != nil {
 		return err
 	}
@@ -127,7 +128,7 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 	uri := fmt.Sprintf("%s/rooms/history?auth_token=%s&room_id=%s&date=%s&timezone=%s",
 		baseURL, url.QueryEscape(c.AuthToken), url.QueryEscape(id), url.QueryEscape(date), url.QueryEscape(tz))
 
-	resp, err := http.Get(uri)
+	resp, err := c.HttpClient.Get(uri)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +156,7 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 func (c *Client) RoomList() ([]Room, error) {
 	uri := fmt.Sprintf("%s/rooms/list?auth_token=%s", baseURL, url.QueryEscape(c.AuthToken))
 
-	resp, err := http.Get(uri)
+	resp, err := c.HttpClient.Get(uri)
 	if err != nil {
 		return nil, err
 	}

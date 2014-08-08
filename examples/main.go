@@ -2,8 +2,7 @@ package main
 
 import (
 	"log"
-
-	"github.com/andybons/hipchat"
+	"github.com/azoff/hipchat"
 )
 
 func main() {
