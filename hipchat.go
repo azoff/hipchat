@@ -70,7 +70,7 @@ type ErrorResponse struct {
 }
 
 type Client struct {
-	AuthToken string
+	AuthToken  string
 	HttpClient *http.Client
 }
 
