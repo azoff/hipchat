@@ -113,12 +113,24 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return err
 	}
 
-	msgResp := &struct{ Status string }{}
+	msgResp := &struct{
+		Status string
+		Error *struct {
+			Code int
+			Type string
+			Message string
+		}
+	}{}
+
 	if err := json.Unmarshal(body, msgResp); err != nil {
 		return err
 	}
 	if msgResp.Status != ResponseStatusSent {
-		return errors.New("PostMessage: response 'status' field was not 'sent'.")
+		if msgResp.Error != nil {
+			return fmt.Errorf("PostMessage(%d): %s", msgResp.Error.Code, msgResp.Error.Message)
+		} else {
+			return errors.New("PostMessage: response 'status' field was not 'sent'.")
+		}
 	}
 
 	return nil
