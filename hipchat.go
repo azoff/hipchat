@@ -100,17 +100,22 @@ func (c *Client) PostMessage(req MessageRequest) error {
 
 	payload, err := urlValuesFromMessageRequest(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("PostMessage: unable to encode hipchat request: %s", err)
 	}
 
 	resp, err := c.HttpClient.PostForm(uri, payload)
 	if err != nil {
-		return err
+		return fmt.Errorf("PostMessage: unable to send hipchat request: %s", err)
 	}
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("PostMessage(%d): unable to read hipchat response: %s", resp.StatusCode, err)
+	}
+
+	if resp.StatusCode == http.StatusServiceUnavailable {
+		return fmt.Errorf("PostMessage(%d): hipchat service is down for maintenance", resp.StatusCode)
 	}
 
 	msgResp := &struct{
@@ -123,13 +128,14 @@ func (c *Client) PostMessage(req MessageRequest) error {
 	}{}
 
 	if err := json.Unmarshal(body, msgResp); err != nil {
-		return err
+		return fmt.Errorf("PostMessage(%d): unable to decode hipchat response, %s: %s", resp.StatusCode, err, body)
 	}
+
 	if msgResp.Status != ResponseStatusSent {
 		if msgResp.Error != nil {
 			return fmt.Errorf("PostMessage(%d): %s", msgResp.Error.Code, msgResp.Error.Message)
 		} else {
-			return errors.New("PostMessage: response 'status' field was not 'sent'.")
+			return fmt.Errorf("PostMessage(%d): response 'status' field was not 'sent'.", resp.StatusCode)
 		}
 	}
 
