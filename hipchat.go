@@ -118,11 +118,11 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return fmt.Errorf("PostMessage(%d): hipchat service is down for maintenance", resp.StatusCode)
 	}
 
-	msgResp := &struct{
+	msgResp := &struct {
 		Status string
-		Error *struct {
-			Code int
-			Type string
+		Error  *struct {
+			Code    int
+			Type    string
 			Message string
 		}
 	}{}
